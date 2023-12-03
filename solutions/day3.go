@@ -74,7 +74,7 @@ func GetRelevenNumbersFromLine(j int, input []string, isSymbol func(rune) bool) 
 		}
 		if isSymbol(char) {
 			curr := GetNumbersFromSymbol(i, j, input)
-			nums = utils.CombineMaps(nums, curr)
+			nums = utils.MapAcc(nums, curr)
 		}
 	}
 	return nums
@@ -84,7 +84,7 @@ func GetReleventNumbers(input []string) map[string][]int {
 	fn := func(j int) map[string][]int {
 		return GetRelevenNumbersFromLine(j, input, isSymbol)
 	}
-	return utils.Parallelise(utils.CombineMaps[string, []int], fn, len(input))
+	return utils.Parallelise(utils.MapAcc[string, []int], fn, len(input))
 }
 
 func isSymbol(char rune) bool {

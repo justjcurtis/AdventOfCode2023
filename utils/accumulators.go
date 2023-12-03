@@ -19,3 +19,14 @@ func IntPairAcc(a []int, b []int) []int {
 	}
 	return []int{a[0] + b[0], a[1] + b[1]}
 }
+
+func MapAcc[T comparable, U any](a map[T]U, b map[T]U) map[T]U {
+	combined := make(map[T]U)
+	for k, v := range a {
+		combined[k] = v
+	}
+	for k, v := range b {
+		combined[k] = v
+	}
+	return combined
+}
