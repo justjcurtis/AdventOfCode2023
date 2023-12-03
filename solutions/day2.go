@@ -125,7 +125,7 @@ func SolveDay2(input []string) []int {
 		part2 += GetConfigPower(config)
 		return []int{part1, part2}
 	}
-	return utils.Parallelise(utils.IntArrAcc, fn, input)
+	return utils.Parallelise(utils.IntPairAcc, fn, input)
 }
 
 func Day2(input []string) []string {

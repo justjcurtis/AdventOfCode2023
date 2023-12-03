@@ -7,7 +7,7 @@ func IntAcc(a int, b int) int {
 	return a + b
 }
 
-func IntArrAcc(a []int, b []int) []int {
+func IntPairAcc(a []int, b []int) []int {
 	if len(a) == 0 {
 		return b
 	}

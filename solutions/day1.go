@@ -76,7 +76,7 @@ func SolveDay1(input []string) []int {
 	fn := func(line string) []int {
 		return []int{SolveDay1Line(line, 1), SolveDay1Line(line, 2)}
 	}
-	return utils.Parallelise(utils.IntArrAcc, fn, input)
+	return utils.Parallelise(utils.IntPairAcc, fn, input)
 }
 
 func Day1(input []string) []string {
