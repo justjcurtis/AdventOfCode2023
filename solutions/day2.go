@@ -114,7 +114,8 @@ func GetConfigPower(config day2Config) int {
 
 func SolveDay2(input []string) []int {
 	config1 := day2Config{rMax: 12, gMax: 13, bMax: 14}
-	fn := func(line string) []int {
+	fn := func(j int, input []string) []int {
+		line := input[j]
 		game := ParseGame(line)
 		part1 := 0
 		part2 := 0

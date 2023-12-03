@@ -5,7 +5,7 @@ package utils
 
 import "runtime"
 
-func Parallelise[T any, U any](acc func(U, U) U, fn func(T) U, input []T) U {
+func Parallelise[T any, U any](acc func(U, U) U, fn func(int, []T) U, input []T) U {
 	var results U
 	workerCount := runtime.NumCPU()
 	ch := make(chan U)
@@ -18,7 +18,7 @@ func Parallelise[T any, U any](acc func(U, U) U, fn func(T) U, input []T) U {
 		go func(i int) {
 			var result U
 			for j := start; j < end; j++ {
-				result = acc(result, fn(input[j]))
+				result = acc(result, fn(j, input))
 			}
 			ch <- result
 		}(i)
