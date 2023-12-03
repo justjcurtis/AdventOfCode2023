@@ -7,7 +7,7 @@ import "runtime"
 
 func Parallelise[T any](acc func(T, T) T, fn func(int) T, maxLength int) T {
 	var results T
-	workerCount := runtime.NumCPU()
+	workerCount := runtime.NumCPU() - 1
 	ch := make(chan T)
 	for i := 0; i < workerCount; i++ {
 		start := maxLength / workerCount * i
