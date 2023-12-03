@@ -4,6 +4,7 @@ Copyright © 2023 Jacson Curtis <justjcurtis@gmail.com>
 package solutions
 
 import (
+	"AdventOfCode2023/utils"
 	"strconv"
 	"strings"
 )
@@ -111,21 +112,23 @@ func GetConfigPower(config day2Config) int {
 	return config.rMax * config.gMax * config.bMax
 }
 
-func Day2(input []string) []string {
-	games := make([]day2Game, 0)
-	for _, line := range input {
-		games = append(games, ParseGame(line))
-	}
-	part1 := 0
-	part2 := 0
+func SolveDay2(input []string) []int {
 	config1 := day2Config{rMax: 12, gMax: 13, bMax: 14}
-	for _, game := range games {
+	fn := func(line string) []int {
+		game := ParseGame(line)
+		part1 := 0
+		part2 := 0
 		if GameIsPossible(game, config1) {
 			part1 += game.id
 		}
 		config := GetMinConfig(game)
 		part2 += GetConfigPower(config)
+		return []int{part1, part2}
 	}
+	return utils.Parallelise(utils.IntArrAcc, fn, input)
+}
 
-	return []string{strconv.Itoa(part1), strconv.Itoa(part2)}
+func Day2(input []string) []string {
+	results := SolveDay2(input)
+	return []string{strconv.Itoa(results[0]), strconv.Itoa(results[1])}
 }

@@ -4,14 +4,14 @@ Copyright © 2023 Jacson Curtis <justjcurtis@gmail.com>
 package solutions
 
 import (
-	"runtime"
+	"AdventOfCode2023/utils"
 	"strconv"
 	"unicode"
 )
 
 var WORD_NUMS = [...]string{"one", "two", "three", "four", "five", "six", "seven", "eight", "nine"}
 
-func SolutionPerLine(line string, part int) int {
+func SolveDay1Line(line string, part int) int {
 	numString := ""
 	for i := 0; i < len(line); i++ {
 		char := rune(line[i])
@@ -72,38 +72,14 @@ func SolutionPerLine(line string, part int) int {
 	return num
 }
 
-func Solve(input []string, part int, c chan<- int) {
-	result := 0
-	ch := make(chan int)
-	workerCount := runtime.NumCPU() / 2
-	for i := 0; i < workerCount; i++ {
-		go func(i int) {
-			result := 0
-			for j := (len(input) / workerCount * i); j < (len(input) / workerCount * (i + 1)); j++ {
-				line := input[j]
-				result += SolutionPerLine(line, part)
-			}
-			ch <- result
-		}(i)
+func SolveDay1(input []string) []int {
+	fn := func(line string) []int {
+		return []int{SolveDay1Line(line, 1), SolveDay1Line(line, 2)}
 	}
-	for i := 0; i < workerCount; i++ {
-		result += <-ch
-	}
-	c <- result
+	return utils.Parallelise(utils.IntArrAcc, fn, input)
 }
 
 func Day1(input []string) []string {
-	part1 := 0
-	part2 := 0
-
-	a := make(chan int)
-	go Solve(input, 1, a)
-
-	b := make(chan int)
-	go Solve(input, 2, b)
-
-	part1 += <-a
-	part2 += <-b
-
-	return []string{strconv.Itoa(part1), strconv.Itoa(part2)}
+	results := SolveDay1(input)
+	return []string{strconv.Itoa(results[0]), strconv.Itoa(results[1])}
 }
