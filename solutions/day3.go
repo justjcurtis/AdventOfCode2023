@@ -5,8 +5,10 @@ package solutions
 
 import (
 	"AdventOfCode2023/utils"
+	"fmt"
 	"strconv"
 	"strings"
+	"time"
 	"unicode"
 )
 
@@ -79,10 +81,10 @@ func GetRelevenNumbersFromLine(j int, input []string, isSymbol func(rune) bool) 
 }
 
 func GetReleventNumbers(input []string) map[string][]int {
-	fn := func(j int, input []string) map[string][]int {
+	fn := func(j int) map[string][]int {
 		return GetRelevenNumbersFromLine(j, input, isSymbol)
 	}
-	return utils.Parallelise(utils.CombineMaps[string, []int], fn, input)
+	return utils.Parallelise(utils.CombineMaps[string, []int], fn, len(input))
 }
 
 func isSymbol(char rune) bool {
@@ -109,16 +111,29 @@ func GetGears(input []string, nums map[string][]int) map[string][]int {
 }
 
 func Day3(input []string) []string {
+	start := time.Now()
 	nums := GetReleventNumbers(input)
+	elapsed := time.Since(start)
+	fmt.Printf("Time to get nums: %s\n", elapsed)
+	start = time.Now()
 	part1 := 0
 	for _, arr := range nums {
 		part1 += arr[0]
 	}
-	part2 := 0
+	elapsed = time.Since(start)
+	fmt.Printf("Time to get part 1: %s\n", elapsed)
+
+	start = time.Now()
 	gears := GetGears(input, nums)
+	elapsed = time.Since(start)
+	fmt.Printf("Time to get gears: %s\n", elapsed)
+	start = time.Now()
+	part2 := 0
 	for _, arr := range gears {
 		part2 += arr[0] * arr[1]
 	}
+	elapsed = time.Since(start)
+	fmt.Printf("Time to get part 2: %s\n\n", elapsed)
 
 	return []string{strconv.Itoa(part1), strconv.Itoa(part2)}
 }

@@ -114,7 +114,7 @@ func GetConfigPower(config day2Config) int {
 
 func SolveDay2(input []string) []int {
 	config1 := day2Config{rMax: 12, gMax: 13, bMax: 14}
-	fn := func(j int, input []string) []int {
+	fn := func(j int) []int {
 		line := input[j]
 		game := ParseGame(line)
 		part1 := 0
@@ -126,7 +126,7 @@ func SolveDay2(input []string) []int {
 		part2 += GetConfigPower(config)
 		return []int{part1, part2}
 	}
-	return utils.Parallelise(utils.IntPairAcc, fn, input)
+	return utils.Parallelise(utils.IntPairAcc, fn, len(input))
 }
 
 func Day2(input []string) []string {

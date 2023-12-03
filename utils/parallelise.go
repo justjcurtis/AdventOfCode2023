@@ -5,20 +5,20 @@ package utils
 
 import "runtime"
 
-func Parallelise[T any, U any](acc func(U, U) U, fn func(int, []T) U, input []T) U {
-	var results U
+func Parallelise[T any](acc func(T, T) T, fn func(int) T, maxLength int) T {
+	var results T
 	workerCount := runtime.NumCPU()
-	ch := make(chan U)
+	ch := make(chan T)
 	for i := 0; i < workerCount; i++ {
-		start := len(input) / workerCount * i
-		end := len(input) / workerCount * (i + 1)
+		start := maxLength / workerCount * i
+		end := maxLength / workerCount * (i + 1)
 		if i == workerCount-1 {
-			end = len(input)
+			end = maxLength
 		}
 		go func(i int) {
-			var result U
+			var result T
 			for j := start; j < end; j++ {
-				result = acc(result, fn(j, input))
+				result = acc(result, fn(j))
 			}
 			ch <- result
 		}(i)
