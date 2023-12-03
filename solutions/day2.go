@@ -4,7 +4,6 @@ Copyright © 2023 Jacson Curtis <justjcurtis@gmail.com>
 package solutions
 
 import (
-	"AdventOfCode2023/utils"
 	"strconv"
 	"strings"
 )
@@ -112,10 +111,9 @@ func GetConfigPower(config day2Config) int {
 	return config.rMax * config.gMax * config.bMax
 }
 
-func Day2() {
-	lines := utils.GetInput(2)
+func Day2(input []string) []string {
 	games := make([]day2Game, 0)
-	for _, line := range lines {
+	for _, line := range input {
 		games = append(games, ParseGame(line))
 	}
 	part1 := 0
@@ -129,8 +127,5 @@ func Day2() {
 		part2 += GetConfigPower(config)
 	}
 
-	println("=------ Day 2 ------=")
-	println("Part 1:", part1)
-	println("Part 2:", part2)
-	println("=-------------------=")
+	return []string{strconv.Itoa(part1), strconv.Itoa(part2)}
 }

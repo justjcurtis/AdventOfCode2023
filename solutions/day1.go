@@ -4,7 +4,6 @@ Copyright © 2023 Jacson Curtis <justjcurtis@gmail.com>
 package solutions
 
 import (
-	"AdventOfCode2023/utils"
 	"runtime"
 	"strconv"
 	"unicode"
@@ -93,9 +92,7 @@ func Solve(input []string, part int, c chan<- int) {
 	c <- result
 }
 
-func Day1() {
-	input := utils.GetInput(1)
-
+func Day1(input []string) []string {
 	part1 := 0
 	part2 := 0
 
@@ -105,17 +102,8 @@ func Day1() {
 	b := make(chan int)
 	go Solve(input, 2, b)
 
-	for i := 0; i < 2; i++ {
-		select {
-		case num := <-a:
-			part1 += num
-		case num := <-b:
-			part2 += num
-		}
-	}
+	part1 += <-a
+	part2 += <-b
 
-	println("=------ Day 1 ------=")
-	println("Part 1: " + strconv.Itoa(part1))
-	println("Part 2: " + strconv.Itoa(part2))
-	println("=-------------------=")
+	return []string{strconv.Itoa(part1), strconv.Itoa(part2)}
 }

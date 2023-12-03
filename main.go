@@ -5,21 +5,35 @@ package main
 
 import (
 	"AdventOfCode2023/solutions"
+	"AdventOfCode2023/utils"
 	"fmt"
 	"time"
 )
 
+type solution struct {
+	day int
+	fn  func([]string) []string
+}
+
+var SOLUTIONS = []solution{
+	{1, solutions.Day1},
+	{2, solutions.Day2},
+}
+
 func main() {
-	start := time.Now()
-	solutions.Day1()
-	elapsed := time.Since(start)
-	fmt.Printf("Day 1 took %s\n", elapsed)
-	println()
+	var totalTime time.Duration
+	for _, solution := range SOLUTIONS {
+		input := utils.GetInput(solution.day)
+		start := time.Now()
+		results := solution.fn(input)
+		elapsed := time.Since(start)
+		totalTime += elapsed
+		utils.PrintResults(solution.day, results)
+		fmt.Printf("Day %d took %s\n", solution.day, elapsed)
+		println()
+	}
 
-	start = time.Now()
-	solutions.Day2()
-	elapsed = time.Since(start)
-	fmt.Printf("Day 2 took %s\n", elapsed)
-	println()
-
+	println("=------ Total ------=")
+	fmt.Printf("Total time: %s\n", totalTime)
+	println("=-------------------=")
 }
