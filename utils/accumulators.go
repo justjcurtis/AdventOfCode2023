@@ -20,6 +20,10 @@ func IntPairAcc(a []int, b []int) []int {
 	return []int{a[0] + b[0], a[1] + b[1]}
 }
 
+func Arr2DAcc[T any](a [][]T, b [][]T) [][]T {
+	return append(a, b...)
+}
+
 func MapAcc[T comparable, U any](a map[T]U, b map[T]U) map[T]U {
 	combined := make(map[T]U)
 	for k, v := range a {

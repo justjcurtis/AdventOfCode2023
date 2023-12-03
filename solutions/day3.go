@@ -10,7 +10,7 @@ import (
 	"unicode"
 )
 
-func GetNumFromCoords(i int, j int, input []string) (int, int) {
+func GetNumFromCoords(i int, j int, input []string) int {
 	line := input[j]
 	start := i
 	for start >= 0 && unicode.IsDigit(rune(line[start])) {
@@ -23,10 +23,10 @@ func GetNumFromCoords(i int, j int, input []string) (int, int) {
 	}
 	end--
 	num, _ := strconv.Atoi(line[start : end+1])
-	return num, start
+	return num
 }
 
-func GetNumbersFromSymbol(i int, j int, input []string) map[string][]int {
+func GetNumbersFromSymbol(i int, j int, input []string) [][]int {
 	coords := [][]int{}
 	if i > 0 {
 		coords = append(coords, []int{i - 1, j})
@@ -49,41 +49,46 @@ func GetNumbersFromSymbol(i int, j int, input []string) map[string][]int {
 		}
 	}
 
-	nums := make(map[string][]int)
+	numMap := make(map[int]bool)
+	nums := [][]int{}
 	for _, coord := range coords {
 		x, y := coord[0], coord[1]
 		char := rune(input[y][x])
 		if unicode.IsDigit(char) {
-			num, start := GetNumFromCoords(x, y, input)
-			nums[strings.Join([]string{strconv.Itoa(start), strconv.Itoa(y)}, ",")] = []int{num, i, j}
+			num := GetNumFromCoords(x, y, input)
+			if numMap[num] {
+				continue
+			}
+			numMap[num] = true
+			nums = append(nums, []int{num, i, j})
 		}
 	}
 
 	return nums
 }
 
-func GetRelevenNumbersFromLine(j int, input []string) map[string][]int {
+func GetRelevenNumbersFromLine(j int, input []string) [][]int {
 	line := input[j]
-	nums := make(map[string][]int)
+	nums := [][]int{}
 	for i := 0; i < len(line); i++ {
 		char := rune(line[i])
 		if char == '.' || unicode.IsDigit(char) {
 			continue
 		}
 		curr := GetNumbersFromSymbol(i, j, input)
-		nums = utils.MapAcc(nums, curr)
+		nums = append(nums, curr...)
 	}
 	return nums
 }
 
-func GetReleventNumbers(input []string) map[string][]int {
-	fn := func(j int) map[string][]int {
+func GetReleventNumbers(input []string) [][]int {
+	fn := func(j int) [][]int {
 		return GetRelevenNumbersFromLine(j, input)
 	}
-	return utils.Parallelise(utils.MapAcc[string, []int], fn, len(input))
+	return utils.Parallelise(utils.Arr2DAcc[int], fn, len(input))
 }
 
-func GetGears(input []string, nums map[string][]int) map[string][]int {
+func GetGears(input []string, nums [][]int) map[string][]int {
 	gears := make(map[string][]int)
 	for _, arr := range nums {
 		i := arr[1]
