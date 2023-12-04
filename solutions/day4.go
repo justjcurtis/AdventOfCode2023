@@ -5,25 +5,11 @@ package solutions
 
 import (
 	"AdventOfCode2023/utils"
+	"math"
+	"slices"
 	"strconv"
 	"strings"
 )
-
-func GetWinningCount(card string) int {
-	numberString := strings.Split(card, ":")[1]
-	winners := GetNumbers(strings.Split(numberString, "|")[0])
-	numbers := GetNumbers(strings.Split(numberString, "|")[1])
-	count := 0
-	for _, number := range numbers {
-		for _, winner := range winners {
-			if number == winner {
-				count++
-				break
-			}
-		}
-	}
-	return count
-}
 
 func GetNumbers(numbersString string) []int {
 	numbers := []int{}
@@ -37,76 +23,58 @@ func GetNumbers(numbersString string) []int {
 	return numbers
 }
 
-func GetCardValue(card string) int {
-	numberString := strings.Split(card, ":")[1]
-	winners := GetNumbers(strings.Split(numberString, "|")[0])
-	numbers := GetNumbers(strings.Split(numberString, "|")[1])
-	value := 0
+func ParseCard(line string) ([]int, []int) {
+	numberString := strings.Split(strings.Split(line, ":")[1], "|")
+	winners := GetNumbers(numberString[0])
+	numbers := GetNumbers(numberString[1])
+	return winners, numbers
+}
+
+func GetWinCount(line string) int {
+	winners, numbers := ParseCard(line)
+	winCount := 0
 	for _, number := range numbers {
-		for _, winner := range winners {
-			if number == winner {
-				if value == 0 {
-					value++
-				} else {
-					value *= 2
-				}
-				break
-			}
+		if slices.Contains(winners, number) {
+			winCount++
 		}
 	}
-	return value
+	return winCount
 }
 
-func GetCardValues(cards []string) int {
+func GetCardValue(line string) int {
+	winCount := GetWinCount(line)
+	return int(math.Max(math.Pow(2, float64(winCount-1)), float64(0)))
+}
+
+func GetCardValues(input []string) int {
 	fn := func(j int) int {
-		return GetCardValue(cards[j])
+		return GetCardValue(input[j])
 	}
-	return utils.Parallelise(utils.IntAcc, fn, len(cards))
+	return utils.Parallelise(utils.IntAcc, fn, len(input))
 }
 
-func GetNextCardForProcessing(cardMap map[int][]int) (int, int) {
-	for index := 0; index < len(cardMap); index++ {
-		card := cardMap[index]
-		if card[0] > card[1] {
-			return index, card[0] - card[1]
-		}
+func GetTotalCards(input []string, c chan<- int) {
+	totalCards := len(input)
+	cardCounts := []int{}
+	for range input {
+		cardCounts = append(cardCounts, 1)
 	}
-	return -1, 0
-}
-
-func GetTotalCards(cards []string) int {
-	cardCount := len(cards)
-	totalCards := len(cards)
-	cardMap := map[int][]int{}
-	for i := range cards {
-		cardMap[i] = []int{1, 0}
-	}
-	for cardCount > 0 {
-		i, n := GetNextCardForProcessing(cardMap)
-		if i == -1 {
-			break
-		}
-		winCount := GetWinningCount(cards[i])
-		cardMap[i] = []int{0, cardMap[i][1] + n}
-		cardCount -= n
+	for i := range input {
+		cardsToProcess := cardCounts[i]
+		winCount := GetWinCount(input[i])
+		totalCards += cardsToProcess * winCount
 		for j := 1; j <= winCount; j++ {
 			z := i + j
-			if _, ok := cardMap[z]; !ok {
-				cardMap[z] = []int{0, 0}
-			}
-			cardMap[z] = []int{
-				cardMap[z][0] + n,
-				cardMap[z][1],
-			}
-			cardCount += n
-			totalCards += n
+			cardCounts[z] = cardCounts[z] + cardsToProcess
 		}
 	}
-	return totalCards
+	c <- totalCards
 }
 
-func Day4(cards []string) []string {
-	part1 := GetCardValues(cards)
-	part2 := GetTotalCards(cards)
+func Day4(input []string) []string {
+	ch := make(chan int)
+	go GetTotalCards(input, ch)
+	part1 := GetCardValues(input)
+	part2 := <-ch
 	return []string{strconv.Itoa(part1), strconv.Itoa(part2)}
 }
