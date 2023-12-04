@@ -24,24 +24,52 @@ var SOLUTIONS = []solution{
 
 func main() {
 	runCount := flag.Int("n", 1, "Number of times to run each solution")
+	minRun := flag.Bool("min", false, "Use the minimum run time instead of the average")
 	flag.Parse()
+	if *runCount < 1 {
+		*runCount = 1
+	}
+	if *minRun && *runCount < 2 {
+		*runCount = 5000
+	}
 
 	var totalTime time.Duration
 	for _, solution := range SOLUTIONS {
+		minElapsed := time.Duration(0)
 		input := utils.GetInput(solution.day)
-		start := time.Now()
-		for i := 0; i < *runCount-1; i++ {
-			solution.fn(input)
+		if *minRun {
+			start := time.Now()
+			for i := 0; i < *runCount-1; i++ {
+				start = time.Now()
+				solution.fn(input)
+				elapsed := time.Since(start)
+				if elapsed < minElapsed || minElapsed == 0 {
+					minElapsed = elapsed
+				}
+			}
+			results := solution.fn(input)
+			totalTime += minElapsed
+			utils.PrintResults(solution.day, results)
+			fmt.Printf("Day %d took %s\n", solution.day, minElapsed)
+		} else {
+			start := time.Now()
+			for i := 0; i < *runCount-1; i++ {
+				solution.fn(input)
+			}
+			results := solution.fn(input)
+			elapsed := time.Since(start)
+			totalTime += elapsed
+			utils.PrintResults(solution.day, results)
+			fmt.Printf("Day %d took %s\n", solution.day, elapsed/time.Duration(*runCount))
 		}
-		results := solution.fn(input)
-		elapsed := time.Since(start)
-		totalTime += elapsed
-		utils.PrintResults(solution.day, results)
-		fmt.Printf("Day %d took %s\n", solution.day, elapsed/time.Duration(*runCount))
 		println()
 	}
 
 	println("=------ Total ------=")
-	fmt.Printf("Total time: %s\n", totalTime/time.Duration(*runCount))
+	if *minRun {
+		fmt.Printf("Total time: %s\n", totalTime)
+	} else {
+		fmt.Printf("Total time: %s\n", totalTime/time.Duration(*runCount))
+	}
 	println("=-------------------=")
 }
