@@ -6,7 +6,6 @@ package solutions
 import (
 	"AdventOfCode2023/utils"
 	"strconv"
-	"strings"
 	"unicode"
 )
 
@@ -88,14 +87,13 @@ func GetReleventNumbers(input []string) [][]int {
 	return utils.Parallelise(utils.Arr2DAcc[int], fn, len(input))
 }
 
-func GetGears(input []string, nums [][]int) map[string][]int {
-	gears := make(map[string][]int)
+func GetGears(input []string, nums [][]int) map[int][]int {
+	gears := make(map[int][]int)
 	for _, arr := range nums {
-		i := arr[1]
-		j := arr[2]
+		i, j := arr[1], arr[2]
 		char := rune(input[j][i])
 		if char == '*' {
-			id := strings.Join([]string{strconv.Itoa(i), strconv.Itoa(j)}, ",")
+			id := utils.SzudzikPairing(i, j)
 			gears[id] = append(gears[id], arr[0])
 		}
 	}
