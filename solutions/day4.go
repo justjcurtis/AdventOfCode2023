@@ -9,15 +9,17 @@ import (
 	"slices"
 	"strconv"
 	"strings"
+
+	"github.com/patrickmn/go-cache"
 )
 
 func GetNumbers(numbersString string) []int {
 	numbers := []int{}
 	for _, number := range strings.Split(numbersString, " ") {
-		number, err := strconv.Atoi(number)
-		if err != nil {
+		if len(number) == 0 {
 			continue
 		}
+		number, _ := strconv.Atoi(number)
 		numbers = append(numbers, number)
 	}
 	return numbers
@@ -30,7 +32,13 @@ func ParseCard(line string) ([]int, []int) {
 	return winners, numbers
 }
 
+var day4Cache = cache.New(cache.NoExpiration, cache.NoExpiration)
+
 func GetWinCount(line string) int {
+	if winCount, found := day4Cache.Get(line); found {
+		return winCount.(int)
+	}
+
 	winners, numbers := ParseCard(line)
 	winCount := 0
 	for _, number := range numbers {
@@ -38,12 +46,12 @@ func GetWinCount(line string) int {
 			winCount++
 		}
 	}
+	day4Cache.Set(line, winCount, cache.NoExpiration)
 	return winCount
 }
 
 func GetCardValue(line string) int {
-	winCount := GetWinCount(line)
-	return int(math.Max(math.Pow(2, float64(winCount-1)), float64(0)))
+	return int(math.Max(math.Pow(2, float64(GetWinCount(line)-1)), float64(0)))
 }
 
 func GetCardValues(input []string) int {
@@ -76,5 +84,6 @@ func Day4(input []string) []string {
 	go GetTotalCards(input, ch)
 	part1 := GetCardValues(input)
 	part2 := <-ch
+	day4Cache.Flush()
 	return []string{strconv.Itoa(part1), strconv.Itoa(part2)}
 }
