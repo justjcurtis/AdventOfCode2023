@@ -11,12 +11,12 @@ import (
 
 func GetNumFromCoords(i int, j int, input []string) int {
 	line := input[j]
-	start := i
+	start := i - 1
 	for start >= 0 && unicode.IsDigit(rune(line[start])) {
 		start--
 	}
 	start++
-	end := i
+	end := i + 1
 	for end < len(line) && unicode.IsDigit(rune(line[end])) {
 		end++
 	}
