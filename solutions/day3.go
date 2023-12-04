@@ -87,17 +87,25 @@ func GetReleventNumbers(input []string) [][]int {
 	return utils.Parallelise(utils.Arr2DAcc[int], fn, len(input))
 }
 
-func GetGears(input []string, nums [][]int) map[int][]int {
-	gears := make(map[int][]int)
+func GetGears(input []string, nums [][]int) [][]int {
+	w := len(input[0])
+	gears := make([][]int, len(input)*w)
 	for _, arr := range nums {
 		i, j := arr[1], arr[2]
 		char := rune(input[j][i])
 		if char == '*' {
-			id := utils.SzudzikPairing(i, j)
+			id := utils.TwoDToOneD(i, j, w)
 			gears[id] = append(gears[id], arr[0])
 		}
 	}
-	return gears
+	result := [][]int{}
+	for i := 0; i < len(gears); i++ {
+		if len(gears[i]) != 2 {
+			continue
+		}
+		result = append(result, gears[i])
+	}
+	return result
 }
 
 func Day3(input []string) []string {
