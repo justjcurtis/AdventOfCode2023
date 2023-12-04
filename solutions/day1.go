@@ -9,7 +9,7 @@ import (
 	"unicode"
 )
 
-var WORD_NUMS = [...]string{"one", "two", "three", "four", "five", "six", "seven", "eight", "nine"}
+var WORD_NUMS = []string{"one", "two", "three", "four", "five", "six", "seven", "eight", "nine"}
 
 func SolveDay1Line(line string, part int) int {
 	numString := ""
@@ -22,7 +22,7 @@ func SolveDay1Line(line string, part int) int {
 		foundWord := false
 		if part > 1 {
 			for j, word := range WORD_NUMS {
-				if len(line[i:]) < len(word) {
+				if len(line)-i < len(word) {
 					continue
 				}
 				if line[i:i+len(word)] == word {
@@ -45,7 +45,7 @@ func SolveDay1Line(line string, part int) int {
 		foundWord := false
 		if part > 1 {
 			for j, word := range WORD_NUMS {
-				if len(line[i:]) < len(word) {
+				if len(line)-i < len(word) {
 					continue
 				}
 				if line[i:i+len(word)] == word {
