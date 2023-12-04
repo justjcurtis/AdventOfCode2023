@@ -14,8 +14,8 @@ func IntPairAcc(a []int, b []int) []int {
 	if len(b) == 0 {
 		return a
 	}
-	if len(a) != len(b) {
-		panic("Arrays must be the same length")
+	if len(a) != len(b) || len(a) != 2 {
+		panic("IntPairAcc: invalid input")
 	}
 	return []int{a[0] + b[0], a[1] + b[1]}
 }
