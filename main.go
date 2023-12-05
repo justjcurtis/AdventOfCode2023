@@ -26,7 +26,15 @@ var SOLUTIONS = []solution{
 func main() {
 	runCount := flag.Int("n", 1, "Number of times to run each solution")
 	minRun := flag.Bool("min", false, "Use the minimum run time instead of the average")
+	singleDay := flag.Int("d", -1, "Run only the specified day")
+
 	flag.Parse()
+
+	if *singleDay > len(SOLUTIONS) {
+		println("Invalid day specified")
+		return
+	}
+
 	if *runCount < 1 {
 		*runCount = 1
 	}
@@ -35,7 +43,10 @@ func main() {
 	}
 
 	var totalTime time.Duration
-	for _, solution := range SOLUTIONS {
+	for d, solution := range SOLUTIONS {
+		if *singleDay > -1 && *singleDay != d+1 {
+			continue
+		}
 		minElapsed := time.Duration(0)
 		input := utils.GetInput(solution.day)
 		if *minRun {
