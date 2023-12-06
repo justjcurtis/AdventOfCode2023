@@ -11,6 +11,9 @@ import (
 func Parallelise[T any](acc func(T, T) T, fn func(int) T, maxLength int) T {
 	var results T
 	workerCount := runtime.NumCPU() - 1
+	if maxLength < workerCount {
+		workerCount = maxLength
+	}
 	ch := make(chan T, workerCount)
 	wg := sync.WaitGroup{}
 	for i := 0; i < workerCount; i++ {
@@ -19,11 +22,19 @@ func Parallelise[T any](acc func(T, T) T, fn func(int) T, maxLength int) T {
 		if i == workerCount-1 {
 			end = maxLength
 		}
+		if workerCount == maxLength {
+			start = i
+			end = i + 1
+		}
 		wg.Add(1)
 		go func(i int) {
 			defer wg.Done()
 			var result T
 			for j := start; j < end; j++ {
+				if j == start {
+					result = fn(j)
+					continue
+				}
 				result = acc(result, fn(j))
 			}
 			ch <- result
@@ -31,6 +42,10 @@ func Parallelise[T any](acc func(T, T) T, fn func(int) T, maxLength int) T {
 	}
 	wg.Wait()
 	for i := 0; i < workerCount; i++ {
+		if i == 0 {
+			results = <-ch
+			continue
+		}
 		results = acc(results, <-ch)
 	}
 	return results

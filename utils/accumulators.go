@@ -34,3 +34,10 @@ func MapAcc[T comparable, U any](a map[T]U, b map[T]U) map[T]U {
 	}
 	return combined
 }
+
+func MinAcc(a int, b int) int {
+	if a < b {
+		return a
+	}
+	return b
+}
