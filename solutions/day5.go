@@ -82,17 +82,17 @@ func ParseInput(input []string) ([]int, []SeedMap) {
 	return seeds, maps
 }
 
-var Day3Cache = cache.New(5*time.Minute, 10*time.Minute)
+var Day5Cache = cache.New(5*time.Minute, 10*time.Minute)
 
 func GetLocation(seed int, maps []SeedMap) int {
-	if val, found := Day3Cache.Get(strconv.Itoa(seed)); found {
+	if val, found := Day5Cache.Get(strconv.Itoa(seed)); found {
 		return val.(int)
 	}
 	currentSeed := seed
 	for i := 0; i < len(maps); i++ {
 		currentSeed, _ = maps[i].get(currentSeed)
 	}
-	Day3Cache.Set(strconv.Itoa(seed), currentSeed, cache.DefaultExpiration)
+	Day5Cache.Set(strconv.Itoa(seed), currentSeed, cache.DefaultExpiration)
 	return currentSeed
 }
 
@@ -246,5 +246,6 @@ func Day5(input []string) []string {
 	part1 := SolveDay5Part1(seeds, maps)
 	secondSeeds := ParseSeedRanges(seeds)
 	part2 := SolveDay5Part2(secondSeeds, maps)
+	Day5Cache.Flush()
 	return []string{strconv.Itoa(part1), strconv.Itoa(part2)}
 }
