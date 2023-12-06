@@ -76,14 +76,18 @@ func main() {
 			utils.PrintResults(solution.day, results)
 			fmt.Printf("Day %d took %s\n", solution.day, elapsed/time.Duration(*runCount))
 		}
-		println()
+		if *singleDay == -1 {
+			println()
+		}
 	}
 
-	println("=------ Total ------=")
-	if *minRun {
-		fmt.Printf("Total time: %s\n", totalTime)
-	} else {
-		fmt.Printf("Total time: %s\n", totalTime/time.Duration(*runCount))
+	if *singleDay == -1 {
+		println("=------ Total ------=")
+		if *minRun {
+			fmt.Printf("Total time: %s\n", totalTime)
+		} else {
+			fmt.Printf("Total time: %s\n", totalTime/time.Duration(*runCount))
+		}
 	}
 	println("=-------------------=")
 }
