@@ -4,7 +4,6 @@ Copyright © 2023 Jacson Curtis <justjcurtis@gmail.com>
 package solutions
 
 import (
-	"reflect"
 	"testing"
 )
 
@@ -17,7 +16,7 @@ func TestDay6Part1(t *testing.T) {
 	input := testDataDay6
 	expected := "288"
 	actual := Day6(input)[0]
-	if !reflect.DeepEqual(actual, expected) {
+	if actual != expected {
 		t.Errorf("Expected %v to equal %v", actual, expected)
 	}
 }
@@ -26,7 +25,7 @@ func TestDay6Part2(t *testing.T) {
 	input := testDataDay6
 	expected := "71503"
 	actual := Day6(input)[1]
-	if !reflect.DeepEqual(actual, expected) {
+	if actual != expected {
 		t.Errorf("Expected %v to equal %v", actual, expected)
 	}
 }
