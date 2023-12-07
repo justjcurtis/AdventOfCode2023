@@ -3,6 +3,10 @@ Copyright © 2023 Jacson Curtis <justjcurtis@gmail.com>
 */
 package utils
 
+func ArrAcc[T any](a []T, b []T) []T {
+	return append(a, b...)
+}
+
 func IntAcc(a int, b int) int {
 	return a + b
 }
