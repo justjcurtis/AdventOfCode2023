@@ -55,8 +55,9 @@ func TestDay8Part1(t *testing.T) {
 
 func TestDay8Part2(t *testing.T) {
 	input := testDataDay8[2]
-	result := Day8(input)[1]
-	expected := "6"
+	parsed := ParseDay8(input)
+	result := SolveDay8Part2(parsed)
+	expected := 6
 	if result != expected {
 		t.Errorf("TestDay8Part2() failed, expected %v, got %v", expected, result)
 	}

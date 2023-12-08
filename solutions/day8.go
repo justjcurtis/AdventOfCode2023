@@ -51,16 +51,19 @@ func ParseDay8(input []string) day8Parsed {
 func SolveDay8Part1(parsed day8Parsed) int {
 	stepCount := 0
 	position := parsed.start
+	instructionIndex := 0
 	for true {
-		for i := 0; i < len(parsed.instructions); i++ {
-			instruction := parsed.instructions[i]
-			choices := parsed.choices[position]
-			nextPosition := choices[instruction]
-			if parsed.isEnd[position][0] {
-				return stepCount
-			}
-			position = nextPosition
-			stepCount++
+		instruction := parsed.instructions[instructionIndex]
+		choices := parsed.choices[position]
+		nextPosition := choices[instruction]
+		if parsed.isEnd[position][0] {
+			return stepCount
+		}
+		position = nextPosition
+		stepCount++
+		instructionIndex++
+		if instructionIndex == len(parsed.instructions) {
+			instructionIndex = 0
 		}
 	}
 	return -1
