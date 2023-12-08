@@ -57,7 +57,7 @@ func SolveDay8Part1(parsed day8Parsed) int {
 			choices := parsed.choices[position]
 			nextPosition := choices[instruction]
 			if parsed.isEnd[position][0] {
-				return stepCount + 1
+				return stepCount
 			}
 			position = nextPosition
 			stepCount++
