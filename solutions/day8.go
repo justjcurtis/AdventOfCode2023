@@ -5,9 +5,7 @@ package solutions
 
 import (
 	"AdventOfCode2023/utils"
-	"fmt"
 	"strconv"
-	"time"
 
 	"github.com/patrickmn/go-cache"
 )
@@ -62,12 +60,8 @@ func GetHCF(a int, b int) int {
 	return GetHCF(b, a%b)
 }
 
-func GetLCM(nums []int) int {
-	lcm := nums[0]
-	for i := 1; i < len(nums); i++ {
-		lcm = lcm * nums[i] / GetHCF(lcm, nums[i])
-	}
-	return lcm
+func GetLCM(a int, b int) int {
+	return a * b / GetHCF(a, b)
 }
 
 func SolveDay8Part2(instructions []int, camelMap *cache.Cache) int {
@@ -84,7 +78,7 @@ func SolveDay8Part2(instructions []int, camelMap *cache.Cache) int {
 		for true {
 			if position[2] == 'Z' {
 				result <- stepCount
-				break
+				return
 			}
 			instruction := instructions[stepCount%len(instructions)]
 			choices, _ := camelMap.Get(position)
@@ -97,25 +91,16 @@ func SolveDay8Part2(instructions []int, camelMap *cache.Cache) int {
 		go worker(start, result)
 	}
 
-	periods := []int{}
+	lcm := 1
 	for i := 0; i < len(starts); i++ {
-		periods = append(periods, <-result)
+		lcm = GetLCM(lcm, <-result)
 	}
-	return GetLCM(periods)
+	return lcm
 }
 
 func Day8(input []string) []string {
-	start := time.Now()
 	instruction, camelMap := ParseDay8(input)
-	elapsed := time.Since(start)
-	fmt.Printf("parse took %s\n", elapsed)
-	start = time.Now()
 	part1 := SolveDay8Part1(instruction, camelMap)
-	elapsed = time.Since(start)
-	fmt.Printf("part 1 took %s\n", elapsed)
-	start = time.Now()
 	part2 := SolveDay8Part2(instruction, camelMap)
-	elapsed = time.Since(start)
-	fmt.Printf("part 2 took %s\n", elapsed)
 	return []string{strconv.Itoa(part1), strconv.Itoa(part2)}
 }
