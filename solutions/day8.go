@@ -4,13 +4,18 @@ Copyright © 2023 Jacson Curtis <justjcurtis@gmail.com>
 package solutions
 
 import (
-	"AdventOfCode2023/utils"
 	"strconv"
-
-	"github.com/patrickmn/go-cache"
 )
 
-func ParseDay8(input []string) ([]int, *cache.Cache) {
+type day8Parsed struct {
+	start        int
+	instructions []int
+	names        []string
+	choices      [][]int
+	isEnd        [][]bool
+}
+
+func ParseDay8(input []string) day8Parsed {
 	instructions := make([]int, len(input[0]))
 	for i, c := range input[0] {
 		if c == 'R' {
@@ -19,31 +24,39 @@ func ParseDay8(input []string) ([]int, *cache.Cache) {
 		}
 		instructions[i] = 0
 	}
-	var camelMap = cache.New(cache.NoExpiration, cache.NoExpiration)
-	fn := func(i int) {
+	indexMap := make(map[string]int)
+	names := make([]string, len(input)-2)
+	choices := make([][]int, len(input)-2)
+	isEnd := make([][]bool, len(input)-2)
+	start := 0
+	for i := 0; i < len(input)-2; i++ {
 		line := input[i+2]
 		key := line[:3]
+		if key == "AAA" {
+			start = i
+		}
+		isEnd[i] = []bool{key == "ZZZ", key[2] == 'Z'}
+		indexMap[key] = i
+		names[i] = key
+	}
+	for i := 0; i < len(input)-2; i++ {
+		line := input[i+2]
 		a := line[7:10]
 		b := line[12:15]
-		camelMap.Add(key, []string{a, b}, cache.NoExpiration)
+		choices[i] = []int{indexMap[a], indexMap[b]}
 	}
-	utils.ParalleliseVoid(fn, len(input)-2)
-
-	return instructions, camelMap
+	return day8Parsed{start, instructions, names, choices, isEnd}
 }
 
-func SolveDay8Part1(instructions []int, camelMap *cache.Cache) int {
+func SolveDay8Part1(parsed day8Parsed) int {
 	stepCount := 0
-	position := "AAA"
+	position := parsed.start
 	for true {
-		for i := 0; i < len(instructions); i++ {
-			instruction := instructions[i]
-			choices, found := camelMap.Get(position)
-			if !found {
-				return stepCount
-			}
-			nextPosition := choices.([]string)[instruction]
-			if nextPosition == "ZZZ" {
+		for i := 0; i < len(parsed.instructions); i++ {
+			instruction := parsed.instructions[i]
+			choices := parsed.choices[position]
+			nextPosition := choices[instruction]
+			if parsed.isEnd[position][0] {
 				return stepCount + 1
 			}
 			position = nextPosition
@@ -64,25 +77,30 @@ func GetLCM(a int, b int) int {
 	return a * b / GetHCF(a, b)
 }
 
-func SolveDay8Part2(instructions []int, camelMap *cache.Cache) int {
-	starts := []string{}
-	for key, _ := range camelMap.Items() {
-		if key[2] == 'A' {
-			starts = append(starts, key)
+func SolveDay8Part2(parsed day8Parsed) int {
+	starts := []int{}
+	for i, name := range parsed.names {
+		if name[2] == 'A' {
+			starts = append(starts, i)
 		}
 	}
 	result := make(chan int, len(starts))
-	worker := func(start string, result chan<- int) {
+	worker := func(start int, result chan<- int) {
 		stepCount := 0
+		instructionIndex := 0
 		position := start
 		for true {
-			if position[2] == 'Z' {
+			if parsed.isEnd[position][1] {
 				result <- stepCount
 				return
 			}
-			instruction := instructions[stepCount%len(instructions)]
-			choices, _ := camelMap.Get(position)
-			nextPosition := choices.([]string)[instruction]
+			instruction := parsed.instructions[instructionIndex]
+			choices := parsed.choices[position]
+			nextPosition := choices[instruction]
+			instructionIndex++
+			if instructionIndex == len(parsed.instructions) {
+				instructionIndex = 0
+			}
 			stepCount++
 			position = nextPosition
 		}
@@ -99,8 +117,8 @@ func SolveDay8Part2(instructions []int, camelMap *cache.Cache) int {
 }
 
 func Day8(input []string) []string {
-	instruction, camelMap := ParseDay8(input)
-	part1 := SolveDay8Part1(instruction, camelMap)
-	part2 := SolveDay8Part2(instruction, camelMap)
+	parsed := ParseDay8(input)
+	part1 := SolveDay8Part1(parsed)
+	part2 := SolveDay8Part2(parsed)
 	return []string{strconv.Itoa(part1), strconv.Itoa(part2)}
 }
