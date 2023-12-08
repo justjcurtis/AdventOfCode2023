@@ -5,7 +5,9 @@ package solutions
 
 import (
 	"AdventOfCode2023/utils"
+	"fmt"
 	"strconv"
+	"time"
 
 	"github.com/patrickmn/go-cache"
 )
@@ -79,14 +81,10 @@ func SolveDay8Part2(instructions []int, camelMap *cache.Cache) int {
 	worker := func(start string, result chan<- int) {
 		stepCount := 0
 		position := start
-		history := map[string]int{}
 		for true {
 			if position[2] == 'Z' {
-				if val, found := history[position]; found {
-					result <- stepCount - val
-					break
-				}
-				history[position] = stepCount
+				result <- stepCount
+				break
 			}
 			instruction := instructions[stepCount%len(instructions)]
 			choices, _ := camelMap.Get(position)
@@ -107,8 +105,17 @@ func SolveDay8Part2(instructions []int, camelMap *cache.Cache) int {
 }
 
 func Day8(input []string) []string {
+	start := time.Now()
 	instruction, camelMap := ParseDay8(input)
+	elapsed := time.Since(start)
+	fmt.Printf("parse took %s\n", elapsed)
+	start = time.Now()
 	part1 := SolveDay8Part1(instruction, camelMap)
+	elapsed = time.Since(start)
+	fmt.Printf("part 1 took %s\n", elapsed)
+	start = time.Now()
 	part2 := SolveDay8Part2(instruction, camelMap)
+	elapsed = time.Since(start)
+	fmt.Printf("part 2 took %s\n", elapsed)
 	return []string{strconv.Itoa(part1), strconv.Itoa(part2)}
 }
