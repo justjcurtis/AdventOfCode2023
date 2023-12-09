@@ -52,7 +52,7 @@ Each day is unit tested using the example input from the puzzle fpr that day on 
     go test ./... -v
     ```
 
-### Buidling
+### Building
 
 To build locally:
 - Follow the [installation instructions](#installation)
