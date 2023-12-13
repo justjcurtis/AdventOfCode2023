@@ -4,7 +4,6 @@ Copyright © 2023 Jacson Curtis <justjcurtis@gmail.com>
 package solutions
 
 import (
-	"fmt"
 	"strconv"
 )
 
@@ -40,11 +39,9 @@ func FloodRecursive(x int, y int, input []string, distance int, visited [][]int)
 		visitVal := visited[ny][nx]
 		if visitVal != 0 {
 			if visitVal == 1 && distance > 2 {
-				// for i := range visited {
-				// 	fmt.Println(visited[i])
-				// }
 				return distance, true
 			}
+			continue
 		}
 		char := input[ny][nx]
 		if char == '.' {
@@ -59,7 +56,6 @@ func FloodRecursive(x int, y int, input []string, distance int, visited [][]int)
 }
 
 func FloodFill(x int, y int, input []string) int {
-	results := []int{}
 	visited := make([][]int, len(input))
 	for i := range visited {
 		visited[i] = make([]int, len(input[0]))
@@ -75,13 +71,16 @@ func FloodFill(x int, y int, input []string) int {
 		if char == '.' {
 			continue
 		}
-		maxDist, isLoop := FloodRecursive(nx, ny, input, 2, visited)
-		if isLoop {
-			results = append(results, maxDist/2)
+		nextNeighbours := charMap[rune(char)]
+		matchA := (nextNeighbours[0][0]+nx == x && nextNeighbours[0][1]+ny == y)
+		matchB := (nextNeighbours[1][0]+nx == x && nextNeighbours[1][1]+ny == y)
+		if matchA || matchB {
+			maxDist, isLoop := FloodRecursive(nx, ny, input, 2, visited)
+			if isLoop {
+				return maxDist / 2
+			}
 		}
 	}
-	fmt.Println(results)
-	fmt.Println(visited)
 	return -1
 }
 
