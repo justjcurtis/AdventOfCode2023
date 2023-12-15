@@ -54,6 +54,7 @@ func TestDay10Part2_1(t *testing.T) {
 		t.Errorf("Expected %s, got %s", expected, result)
 	}
 }
+
 func TestDay10Part2_2(t *testing.T) {
 	input := testDataDay10[2]
 	result := Day10(input)[1]

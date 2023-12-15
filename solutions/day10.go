@@ -15,8 +15,6 @@ var charMap = map[rune][][]int{
 	'7': {{0, 1}, {-1, 0}},                  // down left
 	'F': {{0, 1}, {1, 0}},                   // down right
 	'S': {{0, -1}, {0, 1}, {-1, 0}, {1, 0}}, // all
-	'!': {{0, -1}, {0, 1}, {-1, 0}, {1, 0},
-		{-1, -1}, {1, 1}, {-1, 1}, {1, -1}}, // all + Diagonals
 }
 
 func FindStart(input []string) (int, int) {
@@ -98,64 +96,58 @@ var cornerPairs = map[rune]rune{
 	'7': 'L',
 }
 
-func CanReachOutsideViaCrack(x int, y int, loopMap [][]int, input []string, outside [][]int) bool {
-	cardinal := charMap['S']
-	results := [4]int{}
+func IsOutsideViaPipeCount(x int, y int, loopMap [][]int, input []string, outside [][]int) bool {
+	dir := charMap['S'][0]
+	result := 0
 	lastVal := -1
-	waitFor := '.'
-	for i, dir := range cardinal {
-		nx, ny := x+dir[0], y+dir[1]
-		for nx >= 0 && nx < len(loopMap[0]) &&
-			ny >= 0 && ny < len(loopMap) {
-			val := loopMap[ny][nx]
-			if val == 0 {
-				if lastVal != -1 {
-					results[i]++
-					lastVal = -1
-				}
-				outVal := outside[ny][nx]
-				if outVal > 1 {
-					if results[i]%2 == 0 {
-						return outVal == 3
-					}
-					return outVal == 2
-				}
+	cornerToFind := '.'
+	nx, ny := x+dir[0], y+dir[1]
+	for true {
+		if nx < 0 || nx >= len(loopMap[0]) ||
+			ny < 0 || ny >= len(loopMap) {
+			continue
+		}
+		val := loopMap[ny][nx]
+		char := rune(input[ny][nx])
+		if val == 0 {
+			lastVal = -1
+			if outside[ny][nx] > 1 {
+				return (result%2 == 0) == (outside[ny][nx] == 3)
 			}
-			char := rune(input[ny][nx])
-			if val != lastVal-1 && val != lastVal+1 {
-				lastVal = val
-				if char != '|' && char != '-' {
-					waitFor = cornerPairs[char]
-				} else {
-					results[i]++
-				}
-				if nx == 0 || nx == len(loopMap[0])-1 ||
-					ny == 0 || ny == len(loopMap)-1 {
-					return results[i]%2 == 0
-				}
+		} else if lastVal == -1 {
+			lastVal = val
+			if char == '|' || char == '-' {
+				result++
 			} else {
-				if waitFor != '.' {
-					if char != '|' && char != '-' {
-						waitFor = '.'
-						if char == waitFor {
-							results[i]++
-						}
+				cornerToFind = cornerPairs[char]
+			}
+		} else if val == lastVal+1 || val == lastVal-1 {
+			lastVal = val
+			if cornerToFind != '.' {
+				if char != '|' && char != '-' {
+					if char == cornerToFind {
+						result++
 					}
+					cornerToFind = '.'
 				}
 			}
-			nx += dir[0]
-			ny += dir[1]
+		} else {
+			lastVal = val
+			if char == '|' || char == '-' {
+				result++
+			} else {
+				cornerToFind = cornerPairs[char]
+			}
 		}
-		results[i] /= 2
-	}
-	minimum := results[0]
-	for i := 1; i < 4; i++ {
-		if results[i] < minimum {
-			minimum = results[i]
+		if nx == 0 || nx == len(loopMap[0])-1 ||
+			ny == 0 || ny == len(loopMap)-1 {
+			return result%2 == 0
 		}
+		nx, ny = nx+dir[0], ny+dir[1]
 	}
-	return minimum%2 == 0
+	return false
 }
+
 func CanReachEdge(x int, y int, loopMap [][]int, input []string, outside [][]int) bool {
 	if outside[y][x] == 1 {
 		return false
@@ -171,7 +163,7 @@ func CanReachEdge(x int, y int, loopMap [][]int, input []string, outside [][]int
 	}
 	outside[y][x] = 1
 	found := 2
-	neighbours := charMap['!']
+	neighbours := charMap['S']
 	for _, neighbour := range neighbours {
 		nx, ny := x+neighbour[0], y+neighbour[1]
 		if nx < 0 || nx >= len(loopMap[0]) ||
@@ -186,8 +178,8 @@ func CanReachEdge(x int, y int, loopMap [][]int, input []string, outside [][]int
 		}
 
 	}
-	if found == 99 {
-		if CanReachOutsideViaCrack(x, y, loopMap, input, outside) {
+	if found == 2 {
+		if IsOutsideViaPipeCount(x, y, loopMap, input, outside) {
 			found = 3
 		}
 	}
