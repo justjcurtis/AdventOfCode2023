@@ -10,7 +10,7 @@ type MinHeap[T any] struct {
 }
 
 func NewMinHeap[T any](comparator func(T, T) bool, isEqual func(T, T) bool) *MinHeap[T] {
-	return &MinHeap[T]{comparator: comparator, isEqual: isEqual}
+	return &MinHeap[T]{comparator: comparator}
 }
 
 func (h *MinHeap[T]) Push(value T) {
