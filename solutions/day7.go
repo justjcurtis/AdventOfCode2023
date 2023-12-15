@@ -26,30 +26,34 @@ type CamelHand struct {
 }
 
 func GetHandType(cards []int) int {
-	handMap := make(map[int]int)
-	for _, card := range cards {
-		handMap[card]++
+	handArr := make([]int, 14)
+	unique := 5
+	for i, card := range cards {
+		if utils.IndexOf(cards, card) != i {
+			unique--
+		}
+		handArr[card-1]++
 	}
-	if len(handMap) == 1 {
+	if unique == 1 {
 		return 6
 	}
-	if len(handMap) == 2 {
-		for _, count := range handMap {
+	if unique == 2 {
+		for _, count := range handArr {
 			if count == 4 || count == 1 {
 				return 5
 			}
 		}
 		return 4
 	}
-	if len(handMap) == 3 {
-		for _, count := range handMap {
+	if unique == 3 {
+		for _, count := range handArr {
 			if count == 3 {
 				return 3
 			}
 		}
 		return 2
 	}
-	if len(handMap) == 4 {
+	if unique == 4 {
 		return 1
 	}
 	return 0
@@ -112,7 +116,7 @@ func ParseDay7(lines []string) []CamelHand {
 	return utils.Parallelise(utils.ArrAcc[CamelHand], fn, len(lines))
 }
 
-func SolveDay7Part1(hands []CamelHand) int {
+func SolveDay7Part1(hands []CamelHand, ch chan<- int) {
 	total := 0
 	sort.Slice(hands, func(i, j int) bool {
 		if hands[i].handType == hands[j].handType {
@@ -127,10 +131,10 @@ func SolveDay7Part1(hands []CamelHand) int {
 	for i, hand := range hands {
 		total += hand.bid * (i + 1)
 	}
-	return total
+	ch <- total
 }
 
-func SolveDay7Part2(hands []CamelHand) int {
+func SolveDay7Part2(hands []CamelHand, ch chan<- int) {
 	total := 0
 	sort.Slice(hands, func(i, j int) bool {
 		if hands[i].handTypeWithJokers == hands[j].handTypeWithJokers {
@@ -153,12 +157,14 @@ func SolveDay7Part2(hands []CamelHand) int {
 	for i, hand := range hands {
 		total += hand.bid * (i + 1)
 	}
-	return total
+	ch <- total
 }
 
 func Day7(input []string) []string {
 	hands := ParseDay7(input)
-	part1 := SolveDay7Part1(hands)
-	part2 := SolveDay7Part2(hands)
-	return []string{strconv.Itoa(part1), strconv.Itoa(part2)}
+	ch1 := make(chan int)
+	ch2 := make(chan int)
+	go SolveDay7Part1(hands, ch1)
+	go SolveDay7Part2(hands, ch2)
+	return []string{strconv.Itoa(<-ch1), strconv.Itoa(<-ch2)}
 }
