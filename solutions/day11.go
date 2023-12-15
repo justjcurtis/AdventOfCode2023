@@ -4,8 +4,6 @@ Copyright © 2023 Jacson Curtis <justjcurtis@gmail.com>
 package solutions
 
 import (
-	"AdventOfCode2023/utils"
-	"fmt"
 	"math"
 	"strconv"
 )
@@ -34,7 +32,6 @@ func ExpandDay11(input []string) ([]string, [][]int) {
 		}
 	}
 	for i := 0; i < len(input); i++ {
-		fmt.Println(input[i])
 		for j := 0; j < len(input[0]); j++ {
 			if input[i][j] != '.' {
 				galaxies = append(galaxies, []int{j, i})
@@ -44,85 +41,8 @@ func ExpandDay11(input []string) ([]string, [][]int) {
 	return input, galaxies
 }
 
-func HeuristicDay11(start []int, end []int) int {
+func MinDist(start []int, end []int) int {
 	return int(math.Abs(float64(start[0]-end[0])) + math.Abs(float64(start[1]-end[1])))
-}
-
-type QueueItem struct {
-	coords []int
-	score  int
-}
-
-func QueueItemComparator(a QueueItem, b QueueItem) bool {
-	return a.score < b.score
-}
-func QueueItemIsEqual(a QueueItem, b QueueItem) bool {
-	return a.coords[0] == b.coords[0] && a.coords[1] == b.coords[1]
-}
-
-var dirs = [4][2]int{
-	{0, -1}, {0, 1}, {-1, 0}, {1, 0},
-}
-
-func GetNeighboursDay11(coords []int, input []string) [][]int {
-	neighbours := [][]int{}
-	for _, dir := range dirs {
-		x, y := coords[0]+dir[0], coords[1]+dir[1]
-		if x < 0 || x >= len(input[0]) || y < 0 || y >= len(input) {
-			continue
-		}
-		neighbours = append(neighbours, []int{x, y})
-	}
-	return neighbours
-}
-
-func ReconstructPathDay11(cameFrom map[int][]int, current []int) [][]int {
-	totalPath := [][]int{current}
-	for {
-		currentId := utils.SzudzikPairing(current[0], current[1])
-		current = cameFrom[currentId]
-		if current == nil {
-			break
-		}
-		totalPath = append([][]int{current}, totalPath...)
-	}
-	return totalPath
-}
-
-func AstarDay11(start []int, end []int, input []string, h func([]int, []int) int) int {
-	openSet := utils.NewMinHeap[QueueItem](QueueItemComparator, QueueItemIsEqual)
-	openSet.Push(QueueItem{start, 0})
-	cameFrom := map[int][]int{}
-	gScore := map[int]int{}
-	fScore := map[int]int{}
-	gScore[utils.SzudzikPairing(start[0], start[1])] = 0
-	fScore[utils.SzudzikPairing(start[0], start[1])] = h(start, end)
-	for openSet.Len() > 0 {
-		current := openSet.Peek().coords
-		fmt.Println(current)
-		currentId := utils.SzudzikPairing(current[0], current[1])
-		if current[0] == end[0] && current[1] == end[1] {
-			result := len(ReconstructPathDay11(cameFrom, current))
-			println("Path found with length", result)
-			return result
-		}
-		openSet.Pop()
-		for _, neighbour := range GetNeighboursDay11(current, input) {
-			neighbourId := utils.SzudzikPairing(neighbour[0], neighbour[1])
-			tentativeGScore := gScore[currentId] + 1
-			if gScore[currentId] == 0 || tentativeGScore < gScore[neighbourId] {
-				cameFrom[neighbourId] = current
-				gScore[neighbourId] = tentativeGScore
-				fScore[neighbourId] = tentativeGScore + h(neighbour, end)
-				neighbourItem := QueueItem{neighbour, fScore[neighbourId]}
-				if !openSet.Contains(neighbourItem) {
-					openSet.Push(neighbourItem)
-				}
-			}
-		}
-	}
-	println("No path found")
-	return -1
 }
 
 func SolveDay11Part1(input []string, galaxies [][]int) int {
@@ -131,9 +51,8 @@ func SolveDay11Part1(input []string, galaxies [][]int) int {
 		a := galaxies[i]
 		for j := i + 1; j < len(galaxies); j++ {
 			b := galaxies[j]
-			pathlength := AstarDay11(a, b, input, HeuristicDay11)
+			pathlength := MinDist(a, b)
 			totalPathLength += pathlength
-			return 0
 		}
 	}
 	return totalPathLength
