@@ -4,6 +4,7 @@ Copyright © 2023 Jacson Curtis <justjcurtis@gmail.com>
 package solutions
 
 import (
+	"AdventOfCode2023/utils"
 	"strconv"
 )
 
@@ -55,13 +56,64 @@ func FloodRecursive(x int, y int, input []string, distance int, visited [][]int)
 	return -1, false
 }
 
-func FloodFill(x int, y int, input []string) (int, [][]int) {
+func GetCharForStart(x int, y int, loopMap [][]int) rune {
+	neighbours := charMap['S']
+	for _, neighbour := range neighbours {
+		nx, ny := x+neighbour[0], y+neighbour[1]
+		if nx < 0 || nx >= len(loopMap[0]) || ny < 0 || ny >= len(loopMap) {
+			continue
+		}
+	}
+	return ' '
+}
+
+var DIRS = map[string][]int{
+	"up":    {0, -1},
+	"down":  {0, 1},
+	"left":  {-1, 0},
+	"right": {1, 0},
+}
+
+func HandlePossibleUpdate(possibleStarts []rune, newPossibleStarts []rune) []rune {
+	if len(possibleStarts) == 0 {
+		return newPossibleStarts
+	}
+	result := []rune{}
+	for _, char := range possibleStarts {
+		if utils.IndexOf(newPossibleStarts, char) != -1 {
+			result = append(result, char)
+		}
+	}
+	return result
+}
+
+func UpdatePossibleStarts(possibleStarts []rune, neighbour []int) []rune {
+	switch neighbour[0] {
+	case 0:
+		switch neighbour[1] {
+		case -1:
+			return HandlePossibleUpdate(possibleStarts, []rune{'J', 'L', '|'})
+		case 1:
+			return HandlePossibleUpdate(possibleStarts, []rune{'7', 'F', '|'})
+		}
+		break
+	case -1:
+		return HandlePossibleUpdate(possibleStarts, []rune{'J', '7', '-'})
+	case 1:
+		return HandlePossibleUpdate(possibleStarts, []rune{'L', 'F', '-'})
+	}
+	return possibleStarts
+}
+
+func FloodFill(x int, y int, input []string) (int, [][]int, rune) {
 	visited := make([][]int, len(input))
 	for i := range visited {
 		visited[i] = make([]int, len(input[0]))
 	}
 	neighbours := charMap['S']
+	neighbourToUse := []int{}
 	visited[y][x] = 1
+	possibleStarts := []rune{}
 	for _, neighbour := range neighbours {
 		nx, ny := x+neighbour[0], y+neighbour[1]
 		if nx < 0 || nx >= len(input[0]) || ny < 0 || ny >= len(input) {
@@ -74,17 +126,21 @@ func FloodFill(x int, y int, input []string) (int, [][]int) {
 		nextNeighbours := charMap[rune(char)]
 		matchA := (nextNeighbours[0][0]+nx == x && nextNeighbours[0][1]+ny == y)
 		matchB := (nextNeighbours[1][0]+nx == x && nextNeighbours[1][1]+ny == y)
+
 		if matchA || matchB {
-			maxDist, isLoop := FloodRecursive(nx, ny, input, 2, visited)
-			if isLoop {
-				return maxDist / 2, visited
-			}
+			neighbourToUse = neighbour
+			possibleStarts = UpdatePossibleStarts(possibleStarts, neighbour)
 		}
 	}
-	return -1, [][]int{}
+	nx, ny := x+neighbourToUse[0], y+neighbourToUse[1]
+	maxDist, isLoop := FloodRecursive(nx, ny, input, 2, visited)
+	if isLoop {
+		return maxDist / 2, visited, possibleStarts[0]
+	}
+	return -1, [][]int{}, 'S'
 }
 
-func SolveDay10Part1(input []string) (int, [][]int) {
+func SolveDay10Part1(input []string) (int, [][]int, rune) {
 	x, y := FindStart(input)
 	return FloodFill(x, y, input)
 }
@@ -96,122 +152,52 @@ var cornerPairs = map[rune]rune{
 	'7': 'L',
 }
 
-func IsOutsideViaPipeCount(x int, y int, loopMap [][]int, input []string, outside [][]int) bool {
-	dir := charMap['S'][0]
-	result := 0
-	lastVal := -1
+func CountInsideForLine(loopMap []int, line string, startSymbol rune) int {
+	inside := false
+	count := 0
 	cornerToFind := '.'
-	nx, ny := x+dir[0], y+dir[1]
-	for true {
-		if nx < 0 || nx >= len(loopMap[0]) ||
-			ny < 0 || ny >= len(loopMap) {
-			continue
-		}
-		val := loopMap[ny][nx]
-		char := rune(input[ny][nx])
+	for i, val := range loopMap {
 		if val == 0 {
-			lastVal = -1
-			if outside[ny][nx] > 1 {
-				return (result%2 == 0) == (outside[ny][nx] == 3)
+			if inside {
+				count++
 			}
-		} else if lastVal == -1 {
-			lastVal = val
-			if char == '|' || char == '-' {
-				result++
-			} else {
-				cornerToFind = cornerPairs[char]
-			}
-		} else if val == lastVal+1 || val == lastVal-1 {
-			lastVal = val
-			if cornerToFind != '.' {
-				if char != '|' && char != '-' {
-					if char == cornerToFind {
-						result++
-					}
-					cornerToFind = '.'
-				}
-			}
-		} else {
-			lastVal = val
-			if char == '|' || char == '-' {
-				result++
-			} else {
-				cornerToFind = cornerPairs[char]
-			}
-		}
-		if nx == 0 || nx == len(loopMap[0])-1 ||
-			ny == 0 || ny == len(loopMap)-1 {
-			return result%2 == 0
-		}
-		nx, ny = nx+dir[0], ny+dir[1]
-	}
-	return false
-}
-
-func CanReachEdge(x int, y int, loopMap [][]int, input []string, outside [][]int) bool {
-	if outside[y][x] == 1 {
-		return false
-	}
-	if outside[y][x] == 2 {
-		return false
-	}
-	if outside[y][x] == 3 ||
-		x == 0 || x == len(loopMap[0])-1 ||
-		y == 0 || y == len(loopMap)-1 {
-		outside[y][x] = 3
-		return true
-	}
-	outside[y][x] = 1
-	found := 2
-	neighbours := charMap['S']
-	for _, neighbour := range neighbours {
-		nx, ny := x+neighbour[0], y+neighbour[1]
-		if nx < 0 || nx >= len(loopMap[0]) ||
-			ny < 0 || ny >= len(loopMap) {
 			continue
 		}
-		if loopMap[ny][nx] == 0 {
-			if CanReachEdge(nx, ny, loopMap, input, outside) {
-				found = 3
-				break
-			}
+
+		char := rune(line[i])
+		if char == 'S' {
+			char = startSymbol
 		}
 
-	}
-	if found == 2 {
-		if IsOutsideViaPipeCount(x, y, loopMap, input, outside) {
-			found = 3
-		}
-	}
-	outside[y][x] = found
-	for _, neighbour := range neighbours {
-		outside[y+neighbour[1]][x+neighbour[0]] = found
-	}
-	return found == 3
-}
-
-func SolveDay10Part2(loopMap [][]int, input []string) int {
-	w := len(loopMap[0])
-	outside := make([][]int, len(loopMap))
-	for i := range outside {
-		outside[i] = make([]int, w)
-	}
-	insideCount := 0
-	for y, line := range loopMap {
-		for x, val := range line {
-			if val != 0 {
+		if cornerToFind == '.' {
+			if char == '|' {
+				inside = !inside
 				continue
 			}
-			if !CanReachEdge(x, y, loopMap, input, outside) {
-				insideCount++
+			cornerToFind = cornerPairs[rune(char)]
+			continue
+		}
+
+		if char != '-' {
+			if char == cornerToFind {
+				inside = !inside
 			}
+			cornerToFind = '.'
+			continue
 		}
 	}
-	return insideCount
+	return count
+}
+
+func SolveDay10Part2(loopMap [][]int, input []string, startSymbol rune) int {
+	fn := func(j int) int {
+		return CountInsideForLine(loopMap[j], input[j], '|')
+	}
+	return utils.Parallelise(utils.IntAcc, fn, len(input))
 }
 
 func Day10(input []string) []string {
-	part1, visited := SolveDay10Part1(input)
-	part2 := SolveDay10Part2(visited, input)
+	part1, visited, startSymbol := SolveDay10Part1(input)
+	part2 := SolveDay10Part2(visited, input, startSymbol) // 413
 	return []string{strconv.Itoa(part1), strconv.Itoa(part2)}
 }
