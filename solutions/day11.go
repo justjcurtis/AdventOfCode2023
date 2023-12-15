@@ -4,54 +4,78 @@ Copyright © 2023 Jacson Curtis <justjcurtis@gmail.com>
 package solutions
 
 import (
-	"math"
 	"strconv"
 )
 
-func ExpandDay11(input []string) ([]string, [][]int) {
+func ExpandDay11(input []string) ([]map[int]bool, [][]int) {
 	galaxies := [][]int{}
 	colsWithGalaxies := make([]bool, len(input[0]))
-	for i := len(input) - 1; i >= 0; i-- {
+	expandMap := []map[int]bool{
+		make(map[int]bool),
+		make(map[int]bool),
+	}
+	for j := len(input) - 1; j >= 0; j-- {
 		allDots := true
-		for j, char := range input[i] {
+		for i, char := range input[j] {
 			if char != '.' {
-				colsWithGalaxies[j] = true
+				colsWithGalaxies[i] = true
 				allDots = false
 			}
 		}
 		if allDots {
-			input = append(input[:i+1], input[i:]...)
+			expandMap[0][j] = true
 		}
 	}
-	for j := len(input[0]) - 1; j >= 0; j-- {
-		isEmpty := !colsWithGalaxies[j]
+	for i := len(input[0]) - 1; i >= 0; i-- {
+		isEmpty := !colsWithGalaxies[i]
 		if isEmpty {
-			for i := range input {
-				input[i] = input[i][:j+1] + input[i][j:]
-			}
+			expandMap[1][i] = true
 		}
 	}
-	for i := 0; i < len(input); i++ {
-		for j := 0; j < len(input[0]); j++ {
-			if input[i][j] != '.' {
+	for j := 0; j < len(input); j++ {
+		for i := 0; i < len(input[0]); i++ {
+			if input[j][i] != '.' {
 				galaxies = append(galaxies, []int{j, i})
 			}
 		}
 	}
-	return input, galaxies
+	return expandMap, galaxies
 }
 
-func MinDist(start []int, end []int) int {
-	return int(math.Abs(float64(start[0]-end[0])) + math.Abs(float64(start[1]-end[1])))
+func MinDist(start []int, end []int, expandMap []map[int]bool, expansionFactor int) int {
+	minJ := start[0]
+	maxJ := end[0]
+	if start[0] > end[0] {
+		minJ = end[0]
+		maxJ = start[0]
+	}
+	minI := start[1]
+	maxI := end[1]
+	if start[1] > end[1] {
+		minI = end[1]
+		maxI = start[1]
+	}
+	pathLength := (maxI - minI) + (maxJ - minJ)
+	for j := minJ; j < maxJ; j++ {
+		if expandMap[0][j] {
+			pathLength += expansionFactor - 1
+		}
+	}
+	for i := minI; i < maxI; i++ {
+		if expandMap[1][i] {
+			pathLength += expansionFactor - 1
+		}
+	}
+	return pathLength
 }
 
-func SolveDay11Part1(input []string, galaxies [][]int) int {
+func SolveDay11Part1(expandMap []map[int]bool, galaxies [][]int, expansionFactor int) int {
 	totalPathLength := 0
 	for i := 0; i < len(galaxies)-1; i++ {
 		a := galaxies[i]
 		for j := i + 1; j < len(galaxies); j++ {
 			b := galaxies[j]
-			pathlength := MinDist(a, b)
+			pathlength := MinDist(a, b, expandMap, expansionFactor)
 			totalPathLength += pathlength
 		}
 	}
@@ -59,8 +83,9 @@ func SolveDay11Part1(input []string, galaxies [][]int) int {
 }
 
 func Day11(input []string) []string {
-	expanded, galaxies := ExpandDay11(input)
-	part1 := SolveDay11Part1(expanded, galaxies)
+	expandMap, galaxies := ExpandDay11(input)
+	part1 := SolveDay11Part1(expandMap, galaxies, 2)
+	part2 := SolveDay11Part1(expandMap, galaxies, 1000000)
 
-	return []string{strconv.Itoa(part1)}
+	return []string{strconv.Itoa(part1), strconv.Itoa(part2)}
 }
