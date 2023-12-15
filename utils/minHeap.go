@@ -3,6 +3,8 @@ Copyright © 2023 Jacson Curtis <justjcurtis@gmail.com>
 */
 package utils
 
+import "math"
+
 type MinHeap[T any] struct {
 	heap       []T
 	comparator func(T, T) bool
@@ -32,7 +34,7 @@ func (h *MinHeap[T]) Peek() T {
 }
 
 func (h *MinHeap[T]) bubbleUp(index int) {
-	parent := (index - 1) / 2
+	parent := int(math.Floor(float64(index-1) / float64(2)))
 	if parent < 0 || h.comparator(h.heap[parent], h.heap[index]) {
 		return
 	}

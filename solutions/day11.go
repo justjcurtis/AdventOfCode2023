@@ -5,6 +5,7 @@ package solutions
 
 import (
 	"AdventOfCode2023/utils"
+	"fmt"
 	"math"
 	"strconv"
 )
@@ -16,7 +17,6 @@ func ExpandDay11(input []string) ([]string, [][]int) {
 		allDots := true
 		for j, char := range input[i] {
 			if char != '.' {
-				galaxies = append(galaxies, []int{j, i})
 				colsWithGalaxies[j] = true
 				allDots = false
 			}
@@ -30,6 +30,14 @@ func ExpandDay11(input []string) ([]string, [][]int) {
 		if isEmpty {
 			for i := range input {
 				input[i] = input[i][:j+1] + input[i][j:]
+			}
+		}
+	}
+	for i := 0; i < len(input); i++ {
+		fmt.Println(input[i])
+		for j := 0; j < len(input[0]); j++ {
+			if input[i][j] != '.' {
+				galaxies = append(galaxies, []int{j, i})
 			}
 		}
 	}
@@ -68,7 +76,7 @@ func GetNeighboursDay11(coords []int, input []string) [][]int {
 	return neighbours
 }
 
-func reconstructPathDay11(cameFrom map[int][]int, current []int) [][]int {
+func ReconstructPathDay11(cameFrom map[int][]int, current []int) [][]int {
 	totalPath := [][]int{current}
 	for {
 		currentId := utils.SzudzikPairing(current[0], current[1])
@@ -91,15 +99,18 @@ func AstarDay11(start []int, end []int, input []string, h func([]int, []int) int
 	fScore[utils.SzudzikPairing(start[0], start[1])] = h(start, end)
 	for openSet.Len() > 0 {
 		current := openSet.Peek().coords
-		currentStr := utils.SzudzikPairing(current[0], current[1])
+		fmt.Println(current)
+		currentId := utils.SzudzikPairing(current[0], current[1])
 		if current[0] == end[0] && current[1] == end[1] {
-			return len(reconstructPathDay11(cameFrom, current))
+			result := len(ReconstructPathDay11(cameFrom, current))
+			println("Path found with length", result)
+			return result
 		}
 		openSet.Pop()
 		for _, neighbour := range GetNeighboursDay11(current, input) {
 			neighbourId := utils.SzudzikPairing(neighbour[0], neighbour[1])
-			tentativeGScore := gScore[currentStr] + 1
-			if tentativeGScore < gScore[neighbourId] {
+			tentativeGScore := gScore[currentId] + 1
+			if gScore[currentId] == 0 || tentativeGScore < gScore[neighbourId] {
 				cameFrom[neighbourId] = current
 				gScore[neighbourId] = tentativeGScore
 				fScore[neighbourId] = tentativeGScore + h(neighbour, end)
@@ -110,6 +121,7 @@ func AstarDay11(start []int, end []int, input []string, h func([]int, []int) int
 			}
 		}
 	}
+	println("No path found")
 	return -1
 }
 
@@ -121,6 +133,7 @@ func SolveDay11Part1(input []string, galaxies [][]int) int {
 			b := galaxies[j]
 			pathlength := AstarDay11(a, b, input, HeuristicDay11)
 			totalPathLength += pathlength
+			return 0
 		}
 	}
 	return totalPathLength
