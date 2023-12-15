@@ -29,8 +29,10 @@ func GetHandType(cards []int) int {
 	handArr := make([]int, 14)
 	unique := 5
 	for i, card := range cards {
-		if utils.IndexOf(cards, card) != i {
-			unique--
+		if i > 0 {
+			if utils.IndexOf(cards, card) != i {
+				unique--
+			}
 		}
 		handArr[card-1]++
 	}
@@ -162,9 +164,11 @@ func SolveDay7Part2(hands []CamelHand, ch chan<- int) {
 
 func Day7(input []string) []string {
 	hands := ParseDay7(input)
+	hands2 := make([]CamelHand, len(hands))
+	copy(hands2, hands)
 	ch1 := make(chan int)
 	ch2 := make(chan int)
 	go SolveDay7Part1(hands, ch1)
-	go SolveDay7Part2(hands, ch2)
+	go SolveDay7Part2(hands2, ch2)
 	return []string{strconv.Itoa(<-ch1), strconv.Itoa(<-ch2)}
 }
