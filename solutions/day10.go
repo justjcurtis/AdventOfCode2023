@@ -193,7 +193,7 @@ func SolveDay10Part2(loopMap [][]int, input []string, startSymbol rune) int {
 	fn := func(j int) int {
 		return CountInsideForLine(loopMap[j], input[j], '|')
 	}
-	return utils.Parallelise(utils.IntAcc, fn, len(input))
+	return utils.Parallelise(utils.IntAcc, fn, len(input)) - 1
 }
 
 func Day10(input []string) []string {
