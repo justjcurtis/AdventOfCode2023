@@ -7,13 +7,10 @@ import (
 	"strconv"
 )
 
-func ExpandDay11(input []string) ([]map[int]bool, [][]int) {
+func ExpandDay11(input []string) ([][]int, [][]int) {
 	galaxies := [][]int{}
 	colsWithGalaxies := make([]bool, len(input[0]))
-	expandMap := []map[int]bool{
-		make(map[int]bool),
-		make(map[int]bool),
-	}
+	expandMap := [][]int{{}, {}}
 	for j := len(input) - 1; j >= 0; j-- {
 		allDots := true
 		for i, char := range input[j] {
@@ -23,13 +20,13 @@ func ExpandDay11(input []string) ([]map[int]bool, [][]int) {
 			}
 		}
 		if allDots {
-			expandMap[0][j] = true
+			expandMap[0] = append(expandMap[0], j)
 		}
 	}
 	for i := len(input[0]) - 1; i >= 0; i-- {
 		isEmpty := !colsWithGalaxies[i]
 		if isEmpty {
-			expandMap[1][i] = true
+			expandMap[1] = append(expandMap[1], i)
 		}
 	}
 	for j := 0; j < len(input); j++ {
@@ -42,7 +39,7 @@ func ExpandDay11(input []string) ([]map[int]bool, [][]int) {
 	return expandMap, galaxies
 }
 
-func MinDist(start []int, end []int, expandMap []map[int]bool, expansionFactor int) int {
+func MinDist(start []int, end []int, expandMap [][]int, efA int, efB int) (int, int) {
 	minJ := start[0]
 	maxJ := end[0]
 	if start[0] > end[0] {
@@ -55,37 +52,41 @@ func MinDist(start []int, end []int, expandMap []map[int]bool, expansionFactor i
 		minI = end[1]
 		maxI = start[1]
 	}
-	pathLength := (maxI - minI) + (maxJ - minJ)
-	for j := minJ; j < maxJ; j++ {
-		if expandMap[0][j] {
-			pathLength += expansionFactor - 1
+	pathLengthA := (maxI - minI) + (maxJ - minJ)
+	pathLengthB := pathLengthA
+	for _, j := range expandMap[0] {
+		if j >= minJ && j < maxJ {
+			pathLengthA += efA - 1
+			pathLengthB += efB - 1
 		}
 	}
-	for i := minI; i < maxI; i++ {
-		if expandMap[1][i] {
-			pathLength += expansionFactor - 1
+	for _, i := range expandMap[1] {
+		if i >= minI && i < maxI {
+			pathLengthA += efA - 1
+			pathLengthB += efB - 1
 		}
 	}
-	return pathLength
+	return pathLengthA, pathLengthB
 }
 
-func SolveDay11Part1(expandMap []map[int]bool, galaxies [][]int, expansionFactor int) int {
-	totalPathLength := 0
+func SolveDay11(expandMap [][]int, galaxies [][]int, efA int, efB int) (int, int) {
+	totalPathLengthA := 0
+	totalPathLengthB := 0
 	for i := 0; i < len(galaxies)-1; i++ {
 		a := galaxies[i]
 		for j := i + 1; j < len(galaxies); j++ {
 			b := galaxies[j]
-			pathlength := MinDist(a, b, expandMap, expansionFactor)
-			totalPathLength += pathlength
+			pathLengthA, pathLengthB := MinDist(a, b, expandMap, efA, efB)
+			totalPathLengthA += pathLengthA
+			totalPathLengthB += pathLengthB
 		}
 	}
-	return totalPathLength
+	return totalPathLengthA, totalPathLengthB
 }
 
 func Day11(input []string) []string {
 	expandMap, galaxies := ExpandDay11(input)
-	part1 := SolveDay11Part1(expandMap, galaxies, 2)
-	part2 := SolveDay11Part1(expandMap, galaxies, 1000000)
+	part1, part2 := SolveDay11(expandMap, galaxies, 2, 1000000)
 
 	return []string{strconv.Itoa(part1), strconv.Itoa(part2)}
 }
