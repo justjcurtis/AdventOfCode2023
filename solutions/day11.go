@@ -15,8 +15,10 @@ func ExpandDay11(input []string) ([][]int, [][]int) {
 		allDots := true
 		for i, char := range input[j] {
 			if char != '.' {
+				galaxies = append(galaxies, []int{j, i})
 				colsWithGalaxies[i] = true
 				allDots = false
+				continue
 			}
 		}
 		if allDots {
@@ -27,13 +29,6 @@ func ExpandDay11(input []string) ([][]int, [][]int) {
 		isEmpty := !colsWithGalaxies[i]
 		if isEmpty {
 			expandMap[1] = append(expandMap[1], i)
-		}
-	}
-	for j := 0; j < len(input); j++ {
-		for i := 0; i < len(input[0]); i++ {
-			if input[j][i] != '.' {
-				galaxies = append(galaxies, []int{j, i})
-			}
 		}
 	}
 	return expandMap, galaxies
