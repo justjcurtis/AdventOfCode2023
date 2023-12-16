@@ -28,3 +28,12 @@ func TestDay11Part1(t *testing.T) {
 		t.Errorf("Expected %s but got %s", expected, actual)
 	}
 }
+
+func TestDay11Part2(t *testing.T) {
+	input := testDataDay11
+	expected := "82000210"
+	actual := Day11(input)[1]
+	if actual != expected {
+		t.Errorf("Expected %s but got %s", expected, actual)
+	}
+}
