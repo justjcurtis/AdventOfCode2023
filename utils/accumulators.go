@@ -11,6 +11,14 @@ func IntAcc(a int, b int) int {
 	return a + b
 }
 
+func SumAcc(arr []int) int {
+	sum := 0
+	for _, num := range arr {
+		sum += num
+	}
+	return sum
+}
+
 func IntPairAcc(a []int, b []int) []int {
 	if len(a) == 0 {
 		return b
