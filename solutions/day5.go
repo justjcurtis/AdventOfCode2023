@@ -235,11 +235,7 @@ func RecursePart2(seeds []SeedRange, maps []SeedMap, target int, maxTarget int, 
 func SolveDay5Part2(seeds []SeedRange, maps []SeedMap) int {
 	target := 0
 	maxTarget := GetMaxTarget(maps[len(maps)-1])
-	result := RecursePart2(seeds, maps, target, maxTarget, len(maps)-1)
-	if result != -1 {
-		return result
-	}
-	return -1
+	return RecursePart2(seeds, maps, target, maxTarget, len(maps)-1)
 }
 func Day5(input []string) []string {
 	seeds, maps := ParseInput(input)
