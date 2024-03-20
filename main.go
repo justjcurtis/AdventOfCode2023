@@ -32,6 +32,7 @@ var SOLUTIONS = []solution{
 	{13, solutions.Day13},
 	{14, solutions.Day14},
 	{15, solutions.Day15},
+	{16, solutions.Day16},
 }
 
 func main() {

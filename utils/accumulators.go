@@ -53,3 +53,10 @@ func MinAcc(a int, b int) int {
 	}
 	return b
 }
+
+func MaxAcc(a int, b int) int {
+	if a > b {
+		return a
+	}
+	return b
+}
