@@ -3,7 +3,6 @@ package solutions
 import (
 	"AdventOfCode2023/utils"
 	"fmt"
-	"slices"
 )
 
 type vec struct {
@@ -16,32 +15,42 @@ type beam struct {
 	dir vec
 }
 
-func containsDir(s []vec, dir vec) bool {
-	index := slices.IndexFunc(s, func(v vec) bool {
-		return v.x == dir.x && v.y == dir.y
-	})
-	return index != -1
-}
-
-func countEnergized(energized [][][]vec) int {
-	sum := 0
-	for i := range energized {
-		for j := range energized[i] {
-			if len(energized[i][j]) > 0 {
-				sum++
-			}
+func getDirIndex(dir vec) int {
+	if dir.x == 0 {
+		if dir.y == 1 {
+			return 0
 		}
+		return 1
 	}
-	return sum
+	if dir.x == 1 {
+		return 2
+	}
+	return 3
 }
 
-func traceBeam(input []string, b beam) [][][]vec {
+func containsDir(s [4]bool, dir vec) bool {
+	index := getDirIndex(dir)
+	return s[index]
+}
+
+func addDir(s [4]bool, dir vec) [4]bool {
+	index := getDirIndex(dir)
+	s[index] = true
+	return s
+}
+
+func isEnergized(energized [4]bool) bool {
+	return energized[0] || energized[1] || energized[2] || energized[3]
+}
+
+func traceBeam(input []string, b beam) int {
+	visited := 0
 	beams := []beam{b}
-	energized := make([][][]vec, len(input))
+	energized := make([][][4]bool, len(input))
 	for i := range input {
-		energized[i] = make([][]vec, len(input[i]))
+		energized[i] = make([][4]bool, len(input[i]))
 		for j := range input[i] {
-			energized[i][j] = []vec{}
+			energized[i][j] = [4]bool{}
 		}
 	}
 	for {
@@ -65,7 +74,10 @@ func traceBeam(input []string, b beam) [][][]vec {
 				beams = beams[1:]
 				continue
 			}
-			energized[pos.y][pos.x] = append(energized[pos.y][pos.x], dir)
+			if !isEnergized(energized[pos.y][pos.x]) {
+				visited++
+			}
+			energized[pos.y][pos.x] = addDir(energized[pos.y][pos.x], dir)
 			continue
 		}
 		if currentChar == '|' {
@@ -73,7 +85,10 @@ func traceBeam(input []string, b beam) [][][]vec {
 				beams = beams[1:]
 				continue
 			}
-			energized[pos.y][pos.x] = append(energized[pos.y][pos.x], dir)
+			if !isEnergized(energized[pos.y][pos.x]) {
+				visited++
+			}
+			energized[pos.y][pos.x] = addDir(energized[pos.y][pos.x], dir)
 			if dir.x != 0 {
 				beams[0].dir.y = 1
 				beams[0].dir.x = 0
@@ -86,7 +101,10 @@ func traceBeam(input []string, b beam) [][][]vec {
 				beams = beams[1:]
 				continue
 			}
-			energized[pos.y][pos.x] = append(energized[pos.y][pos.x], dir)
+			if !isEnergized(energized[pos.y][pos.x]) {
+				visited++
+			}
+			energized[pos.y][pos.x] = addDir(energized[pos.y][pos.x], dir)
 			if dir.y != 0 {
 				beams[0].dir.x = 1
 				beams[0].dir.y = 0
@@ -99,7 +117,10 @@ func traceBeam(input []string, b beam) [][][]vec {
 				beams = beams[1:]
 				continue
 			}
-			energized[pos.y][pos.x] = append(energized[pos.y][pos.x], vec{dir.x, dir.y})
+			if !isEnergized(energized[pos.y][pos.x]) {
+				visited++
+			}
+			energized[pos.y][pos.x] = addDir(energized[pos.y][pos.x], vec{dir.x, dir.y})
 			if dir.x != 0 {
 				beams[0].dir.y = -1 * dir.x
 				beams[0].dir.x = 0
@@ -115,7 +136,10 @@ func traceBeam(input []string, b beam) [][][]vec {
 				beams = beams[1:]
 				continue
 			}
-			energized[pos.y][pos.x] = append(energized[pos.y][pos.x], vec{dir.x, dir.y})
+			if !isEnergized(energized[pos.y][pos.x]) {
+				visited++
+			}
+			energized[pos.y][pos.x] = addDir(energized[pos.y][pos.x], vec{dir.x, dir.y})
 			if dir.x != 0 {
 				beams[0].dir.y = 1 * dir.x
 				beams[0].dir.x = 0
@@ -126,13 +150,12 @@ func traceBeam(input []string, b beam) [][][]vec {
 			continue
 		}
 	}
-	return energized
+	return visited
 }
 
 func SolveDay16Part1(input []string) int {
 	b := beam{vec{-1, 0}, vec{1, 0}}
-	energized := traceBeam(input, b)
-	return countEnergized(energized)
+	return traceBeam(input, b)
 }
 
 func getPossibleBeams(w int, h int) []beam {
@@ -151,8 +174,7 @@ func getPossibleBeams(w int, h int) []beam {
 func SolveDay16Part2(input []string) int {
 	beams := getPossibleBeams(len(input[0]), len(input))
 	fn := func(i int) int {
-		energized := traceBeam(input, beams[i])
-		return countEnergized(energized)
+		return traceBeam(input, beams[i])
 	}
 	return utils.Parallelise(utils.MaxAcc, fn, len(beams))
 }
